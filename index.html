@@ -1,0 +1,1388 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cybersecurity Threat Detection & Log Analysis – Big Data Project</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <style>
+    /* ---------- CSS Variables ---------- */
+    :root {
+        --primary: #2563eb;
+        --primary-dark: #1d4ed8;
+        --primary-light: #3b82f6;
+        --secondary: #10b981;
+        --accent: #7c3aed;
+        --accent-pink: #ec4899;
+        --warning: #f59e0b;
+        --danger: #ef4444;
+        --dark: #0f172a;
+        --dark-light: #1e293b;
+        --gray-900: #111827;
+        --gray-800: #1f2937;
+        --gray-700: #374151;
+        --gray-600: #4b5563;
+        --gray-500: #6b7280;
+        --gray-400: #9ca3af;
+        --gray-300: #d1d5db;
+        --gray-200: #e5e7eb;
+        --gray-100: #f3f4f6;
+        --gray-50: #f9fafb;
+        --white: #ffffff;
+        --glass-bg: rgba(255, 255, 255, 0.85);
+        --glass-border: rgba(255, 255, 255, 0.3);
+        --shadow-sm: 0 1px 2px rgba(0,0,0,0.05);
+        --shadow-md: 0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -2px rgba(0,0,0,0.1);
+        --shadow-lg: 0 10px 15px -3px rgba(0,0,0,0.1), 0 4px 6px -4px rgba(0,0,0,0.1);
+        --shadow-xl: 0 20px 25px -5px rgba(0,0,0,0.1), 0 8px 10px -6px rgba(0,0,0,0.1);
+        --shadow-2xl: 0 25px 50px -12px rgba(0,0,0,0.25);
+        --radius-sm: 6px;
+        --radius-md: 12px;
+        --radius-lg: 16px;
+        --radius-xl: 24px;
+        --radius-2xl: 32px;
+    }
+
+    /* ---------- Base Reset & Layout ---------- */
+    *, *::before, *::after {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+    }
+
+    html {
+        scroll-behavior: smooth;
+        scroll-padding-top: 100px;
+    }
+
+    body {
+        font-family: 'Inter', system-ui, -apple-system, sans-serif;
+        line-height: 1.7;
+        color: var(--gray-800);
+        background: var(--gray-100);
+        min-height: 100vh;
+        overflow-x: hidden;
+    }
+
+    /* ---------- Animated Background ---------- */
+    .bg-wrapper {
+        position: fixed;
+        inset: 0;
+        z-index: -1;
+        background: 
+            linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        overflow: hidden;
+    }
+
+    .bg-wrapper::before {
+        content: '';
+        position: absolute;
+        top: -50%;
+        left: -50%;
+        width: 200%;
+        height: 200%;
+        background: 
+            radial-gradient(circle at 20% 80%, rgba(120, 119, 198, 0.3) 0%, transparent 50%),
+            radial-gradient(circle at 80% 20%, rgba(255, 119, 198, 0.3) 0%, transparent 50%),
+            radial-gradient(circle at 40% 40%, rgba(120, 219, 255, 0.3) 0%, transparent 40%);
+        animation: bgPulse 15s ease-in-out infinite;
+    }
+
+    @keyframes bgPulse {
+        0%, 100% { transform: translate(0, 0) scale(1); }
+        33% { transform: translate(-5%, 5%) scale(1.05); }
+        66% { transform: translate(5%, -5%) scale(0.95); }
+    }
+
+    .floating-shapes {
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        overflow: hidden;
+        pointer-events: none;
+    }
+
+    .shape {
+        position: absolute;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.1);
+        backdrop-filter: blur(5px);
+        animation: float 20s infinite ease-in-out;
+    }
+
+    .shape:nth-child(1) {
+        width: 300px;
+        height: 300px;
+        top: 10%;
+        left: -5%;
+        animation-delay: 0s;
+    }
+
+    .shape:nth-child(2) {
+        width: 200px;
+        height: 200px;
+        top: 60%;
+        right: -3%;
+        animation-delay: -5s;
+    }
+
+    .shape:nth-child(3) {
+        width: 150px;
+        height: 150px;
+        bottom: 10%;
+        left: 20%;
+        animation-delay: -10s;
+    }
+
+    .shape:nth-child(4) {
+        width: 100px;
+        height: 100px;
+        top: 30%;
+        right: 20%;
+        animation-delay: -7s;
+    }
+
+    @keyframes float {
+        0%, 100% { transform: translateY(0) rotate(0deg); }
+        25% { transform: translateY(-20px) rotate(5deg); }
+        50% { transform: translateY(0) rotate(0); }
+        75% { transform: translateY(20px) rotate(-5deg); }
+    }
+
+    /* ---------- Progress Bar ---------- */
+    .progress-bar {
+        position: fixed;
+        top: 0;
+        left: 0;
+        height: 4px;
+        background: linear-gradient(90deg, var(--primary), var(--secondary), var(--accent));
+        width: 0%;
+        z-index: 9999;
+        transition: width 0.1s ease;
+    }
+
+    /* ---------- Floating Nav ---------- */
+    .floating-nav {
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        display: flex;
+        gap: 10px;
+        z-index: 1000;
+    }
+
+    .nav-btn {
+        width: 50px;
+        height: 50px;
+        border-radius: 50%;
+        border: none;
+        background: var(--glass-bg);
+        backdrop-filter: blur(20px);
+        box-shadow: var(--shadow-lg);
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.2rem;
+        color: var(--gray-700);
+        transition: all 0.3s ease;
+    }
+
+    .nav-btn:hover {
+        transform: translateY(-3px);
+        box-shadow: var(--shadow-xl);
+        color: var(--primary);
+    }
+
+    .nav-btn.active {
+        background: var(--primary);
+        color: white;
+    }
+
+    /* ---------- Back to Top ---------- */
+    .back-to-top {
+        position: fixed;
+        bottom: 30px;
+        right: 30px;
+        width: 55px;
+        height: 55px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, var(--primary), var(--accent));
+        color: white;
+        border: none;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.3rem;
+        box-shadow: var(--shadow-xl);
+        opacity: 0;
+        visibility: hidden;
+        transform: translateY(20px);
+        transition: all 0.3s ease;
+        z-index: 1000;
+    }
+
+    .back-to-top.visible {
+        opacity: 1;
+        visibility: visible;
+        transform: translateY(0);
+    }
+
+    .back-to-top:hover {
+        transform: translateY(-5px) scale(1.1);
+        box-shadow: 0 15px 35px rgba(37, 99, 235, 0.4);
+    }
+
+    /* ---------- Main Container ---------- */
+    .container {
+        max-width: 1200px;
+        margin: 40px auto;
+        background: var(--glass-bg);
+        backdrop-filter: blur(20px);
+        padding: 0;
+        border-radius: var(--radius-2xl);
+        box-shadow: 
+            0 50px 100px -20px rgba(0, 0, 0, 0.25),
+            0 30px 60px -30px rgba(0, 0, 0, 0.3),
+            inset 0 1px 0 rgba(255, 255, 255, 0.6);
+        border: 1px solid rgba(255, 255, 255, 0.3);
+        overflow: hidden;
+        animation: containerReveal 1s ease-out;
+    }
+
+    @keyframes containerReveal {
+        from {
+            opacity: 0;
+            transform: translateY(50px) scale(0.95);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+        }
+    }
+
+    /* ---------- Hero Header ---------- */
+    .hero-header {
+        position: relative;
+        padding: 60px 60px 50px;
+        background: linear-gradient(135deg, #1e3a5f 0%, #0f172a 50%, #1e1b4b 100%);
+        overflow: hidden;
+    }
+
+    .hero-header::before {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background: 
+            url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%239C92AC' fill-opacity='0.05'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+        opacity: 0.5;
+    }
+
+    .hero-glow {
+        position: absolute;
+        width: 600px;
+        height: 600px;
+        border-radius: 50%;
+        filter: blur(100px);
+        opacity: 0.3;
+    }
+
+    .hero-glow-1 {
+        top: -200px;
+        left: -100px;
+        background: var(--primary);
+    }
+
+    .hero-glow-2 {
+        bottom: -300px;
+        right: -100px;
+        background: var(--accent);
+    }
+
+    .hero-content {
+        position: relative;
+        z-index: 1;
+        text-align: center;
+    }
+
+    .logo-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 12px;
+        padding: 10px 24px;
+        background: rgba(255, 255, 255, 0.1);
+        backdrop-filter: blur(10px);
+        border-radius: 50px;
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        margin-bottom: 24px;
+        animation: fadeDown 0.8s ease-out 0.2s both;
+    }
+
+    @keyframes fadeDown {
+        from {opacity:0;transform:translateY(-20px);}
+        to {opacity:1;transform:translateY(0);}
+    }
+
+    .logo-badge i {
+        font-size: 1.8rem;
+        background: linear-gradient(135deg, #4ade80, #22c55e);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+    }
+
+    .logo-badge span {
+        font-family: 'Poppins', sans-serif;
+        font-weight: 600;
+        font-size: 0.9rem;
+        color: rgba(255, 255, 255, 0.9);
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+    }
+
+    .hero-title {
+        font-family: 'Poppins', sans-serif;
+        font-size: 3.1rem;
+        font-weight: 800;
+        line-height: 1.1;
+        margin-bottom: 16px;
+        animation: titleReveal 1s ease-out 0.4s both;
+    }
+
+    @keyframes titleReveal {
+        from {opacity:0;transform:translateY(30px);filter:blur(10px);}
+        to {opacity:1;transform:translateY(0);filter:blur(0);}
+    }
+
+    .hero-title .brand {
+        display: inline-block;
+        background: linear-gradient(135deg, #60a5fa, #a78bfa, #f472b6, #fb923c);
+        background-size: 300% 300%;
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        animation: gradientFlow 5s ease infinite;
+    }
+
+    @keyframes gradientFlow {
+        0%,100% {background-position:0% 50%;}
+        50% {background-position:100% 50%;}
+    }
+
+    .hero-title .white {color:white;}
+
+    .hero-subtitle {
+        display: inline-flex;
+        align-items: center;
+        gap: 16px;
+        padding: 12px 28px;
+        background: linear-gradient(135deg, rgba(37, 99, 235, 0.3), rgba(124, 58, 237, 0.3));
+        border-radius: 50px;
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        margin-top: 8px;
+        animation: fadeUp 0.8s ease-out 0.6s both;
+    }
+
+    @keyframes fadeUp {
+        from {opacity:0;transform:translateY(20px);}
+        to {opacity:1;transform:translateY(0);}
+    }
+
+    .hero-subtitle span {
+        font-size: 0.85rem;
+        font-weight: 600;
+        letter-spacing: 0.15em;
+        text-transform: uppercase;
+        color: rgba(255, 255, 255, 0.9);
+    }
+
+    .hero-subtitle .divider {
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        background: var(--secondary);
+        animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+        0%,100% {opacity:1;transform:scale(1);}
+        50% {opacity:0.5;transform:scale(1.5);}
+    }
+
+    /* ---------- Meta Badges ---------- */
+    .meta-section {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 16px;
+        padding: 24px 40px;
+        background: linear-gradient(135deg, rgba(248, 250, 252, 0.9), rgba(241, 245, 249, 0.9));
+        border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+        animation: fadeUp 0.8s ease-out 0.8s both;
+    }
+
+    .meta-badge {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 12px 20px;
+        background: white;
+        border-radius: 50px;
+        box-shadow: var(--shadow-md);
+        border: 1px solid var(--gray-200);
+        transition: all 0.3s ease;
+    }
+
+    .meta-badge:hover {
+        transform: translateY(-3px);
+        box-shadow: var(--shadow-lg);
+        border-color: var(--primary);
+    }
+
+    .meta-badge .icon {
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.9rem;
+    }
+
+    .meta-badge.version .icon {
+        background: linear-gradient(135deg, #dbeafe, #bfdbfe);
+        color: var(--primary);
+    }
+
+    .meta-badge.date .icon {
+        background: linear-gradient(135deg, #d1fae5, #a7f3d0);
+        color: var(--secondary);
+    }
+
+    .meta-badge.author .icon {
+        background: linear-gradient(135deg, #ede9fe, #ddd6fe);
+        color: var(--accent);
+    }
+
+    .meta-badge .label {
+        font-size: 0.75rem;
+        font-weight: 500;
+        color: var(--gray-500);
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+    }
+
+    .meta-badge .value {
+        font-size: 0.9rem;
+        font-weight: 600;
+        color: var(--gray-800);
+    }
+
+    .meta-badge.author .value {
+        background: linear-gradient(135deg, var(--primary), var(--accent));
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        animation: shimmer 3s infinite;
+    }
+
+    @keyframes shimmer {
+        0%,100% {filter:hue-rotate(0deg);}
+        50% {filter:hue-rotate(30deg);}
+    }
+
+    /* ---------- Content Area ---------- */
+    .content-area {padding:50px 60px 60px;}
+
+    .intro-text {
+        text-align: center;
+        max-width: 800px;
+        margin: 0 auto 40px;
+        font-size: 1.05rem;
+        color: var(--gray-600);
+        line-height: 1.8;
+    }
+
+    .intro-text strong {color:var(--primary);}
+
+    /* ---------- TOC ---------- */
+    .toc-section {margin-bottom:50px;}
+
+    .section-header {
+        display:flex;align-items:center;gap:16px;margin-bottom:24px;
+    }
+
+    .section-icon {
+        width:50px;height:50px;border-radius:var(--radius-md);
+        display:flex;align-items:center;justify-content:center;
+        font-size:1.3rem;color:white;
+        background:linear-gradient(135deg,var(--primary),var(--primary-dark));
+        box-shadow:0 8px 20px rgba(37,99,235,.3);
+    }
+
+    .section-header h2 {
+        font-family:'Poppins',sans-serif;
+        font-size:1.8rem;font-weight:700;color:var(--gray-900);
+    }
+
+    .toc-wrapper {
+        background:linear-gradient(135deg,#f8fafc 0%,#f1f5f9 100%);
+        border-radius:var(--radius-xl);
+        padding:32px 40px;
+        border:1px solid var(--gray-200);
+        box-shadow:var(--shadow-lg), inset 0 1px 0 rgba(255,255,255,.8);
+        position:relative;overflow:hidden;
+    }
+
+    .toc-wrapper::before {
+        content:'';position:absolute;top:0;left:0;right:0;height:4px;
+        background:linear-gradient(90deg,var(--primary),var(--secondary),var(--accent),var(--accent-pink));
+    }
+
+    .toc-grid {
+        display:grid;
+        grid-template-columns:repeat(auto-fit,minmax(280px,1fr));
+        gap:24px;
+    }
+
+    .toc-column {display:flex;flex-direction:column;gap:12px;}
+
+    .toc-item {
+        display:block;padding:14px 18px;background:white;
+        border-radius:var(--radius-md);border:1px solid var(--gray-200);
+        text-decoration:none;transition:all .3s ease;position:relative;overflow:hidden;
+    }
+
+    .toc-item::before {
+        content:'';position:absolute;left:0;top:0;bottom:0;width:4px;
+        background:linear-gradient(180deg,var(--primary),var(--accent));
+        transform:scaleY(0);transition:transform .3s ease;
+    }
+
+    .toc-item:hover {
+        transform:translateX(8px);border-color:var(--primary);box-shadow:var(--shadow-md);
+    }
+
+    .toc-item:hover::before {transform:scaleY(1);}
+
+    .toc-item .number {
+        display:inline-flex;align-items:center;justify-content:center;
+        width:28px;height:28px;border-radius:50%;
+        background:linear-gradient(135deg,var(--primary),var(--primary-dark));
+        color:white;font-size:.8rem;font-weight:600;margin-right:12px;
+    }
+
+    .toc-item .title {font-weight:600;color:var(--gray-800);font-size:.95rem;}
+
+    .toc-item .icon {
+        position:absolute;right:16px;top:50%;
+        transform:translateY(-50%);color:var(--gray-400);transition:all .3s ease;
+    }
+
+    .toc-item:hover .icon {
+        color:var(--primary);transform:translateY(-50%) translateX(4px);
+    }
+
+    .toc-subitems {
+        margin-left:44px;margin-top:8px;display:flex;flex-direction:column;gap:4px;
+    }
+
+    .toc-subitem {
+        display:flex;align-items:center;gap:8px;
+        padding:6px 12px;font-size:.85rem;color:var(--gray-600);
+        text-decoration:none;border-radius:var(--radius-sm);transition:all .2s ease;
+    }
+
+    .toc-subitem:hover {
+        background:var(--gray-100);color:var(--primary);padding-left:16px;
+    }
+
+    .toc-subitem::before {
+        content:'';width:6px;height:6px;border-radius:50%;
+        background:var(--gray-300);transition:all .2s ease;
+    }
+
+    .toc-subitem:hover::before {
+        background:var(--primary);transform:scale(1.3);
+    }
+
+    /* ---------- Content Sections ---------- */
+    .doc-section {
+        margin-top:60px;scroll-margin-top:100px;
+        animation:sectionReveal .6s ease-out both;
+    }
+
+    @keyframes sectionReveal {
+        from {opacity:0;transform:translateY(30px);}
+        to {opacity:1;transform:translateY(0);}
+    }
+
+    .doc-section .section-header {
+        padding-bottom:16px;border-bottom:2px solid var(--gray-200);margin-bottom:24px;
+    }
+
+    .section-content {
+        background:white;border-radius:var(--radius-xl);
+        padding:32px;border:1px solid var(--gray-200);box-shadow:var(--shadow-md);
+    }
+
+    /* Section Icon Colors */
+    .section-icon.intro { background: linear-gradient(135deg, #3b82f6, #1d4ed8); }
+    .section-icon.arch { background: linear-gradient(135deg, #8b5cf6, #6d28d9); }
+    .section-icon.website { background: linear-gradient(135deg, #10b981, #059669); }
+    .section-icon.checkout { background: linear-gradient(135deg, #f59e0b, #d97706); }
+    .section-icon.kds { background: linear-gradient(135deg, #ef4444, #dc2626); }
+    .section-icon.backoffice { background: linear-gradient(135deg, #06b6d4, #0891b2); }
+    .section-icon.workflow { background: linear-gradient(135deg, #ec4899, #db2777); }
+    .section-icon.nonfunc { background: linear-gradient(135deg, #84cc16, #65a30d); }
+    .section-icon.screenshots { background: linear-gradient(135deg, #f97316, #ea580c); }
+
+    /* ---------- Subsections ---------- */
+    h3 {
+        display:flex;align-items:center;gap:12px;
+        font-family:'Poppins',sans-serif;font-size:1.25rem;
+        font-weight:600;color:var(--gray-800);margin-top:32px;margin-bottom:16px;
+    }
+    h3:first-child {margin-top:0;}
+
+    h3 .badge {
+        display:inline-flex;align-items:center;justify-content:center;
+        padding:4px 12px;background:linear-gradient(135deg,var(--primary),var(--accent));
+        color:white;font-size:.75rem;font-weight:600;border-radius:50px;
+    }
+
+    h4 {
+        font-family:'Poppins',sans-serif;font-size:1.05rem;font-weight:600;
+        color:var(--gray-700);margin-top:24px;margin-bottom:12px;
+        padding-left:16px;border-left:3px solid var(--secondary);
+    }
+
+    /* ---------- Text & Lists ---------- */
+    p {
+        margin:12px 0;font-size:.95rem;color:var(--gray-700);line-height:1.8;
+    }
+    ul,ol {margin:12px 0;padding-left:0;list-style:none;}
+    ul li,ol li {
+        position:relative;padding-left:28px;margin-bottom:10px;
+        font-size:.95rem;color:var(--gray-700);
+    }
+    ul li::before {
+        content:'';position:absolute;left:0;top:10px;width:8px;height:8px;
+        border-radius:50%;background:linear-gradient(135deg,var(--primary),var(--accent));
+    }
+    ol {counter-reset:list-counter;}
+    ol li{counter-increment:list-counter;}
+    ol li::before{
+        content:counter(list-counter);position:absolute;left:0;top:0;
+        width:22px;height:22px;border-radius:50%;
+        background:linear-gradient(135deg,var(--primary),var(--primary-dark));
+        color:white;font-size:.75rem;font-weight:600;
+        display:flex;align-items:center;justify-content:center;
+    }
+    strong{font-weight:600;color:var(--gray-800);}
+
+    .callout {
+        padding:20px 24px;border-radius:16px;margin:20px 0;
+        display:flex;gap:16px;align-items:flex-start;
+    }
+    .callout-icon {
+        width:40px;height:40px;border-radius:50%;
+        display:flex;align-items:center;justify-content:center;
+        flex-shrink:0;font-size:1.1rem;
+    }
+    .callout-content{flex:1;}
+    .callout-title{font-weight:600;font-size:.95rem;margin-bottom:4px;}
+    .callout-text{font-size:.9rem;margin:0;}
+    .callout.info{
+        background:linear-gradient(135deg,#eff6ff,#dbeafe);border:1px solid #93c5fd;
+    }
+    .callout.info .callout-icon{background:var(--primary);color:white;}
+    .callout.info .callout-title{color:var(--primary-dark);}
+    .callout.success{
+        background:linear-gradient(135deg,#ecfdf5,#d1fae5);border:1px solid #6ee7b7;
+    }
+    .callout.success .callout-icon{background:var(--secondary);color:white;}
+    .callout.success .callout-title{color:#047857;}
+
+    .feature-grid{
+        display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));
+        gap:20px;margin:24px 0;
+    }
+    .feature-card{
+        background:linear-gradient(135deg,var(--gray-50),white);
+        padding:24px;border-radius:16px;border:1px solid var(--gray-200);
+        transition:all .3s ease;
+    }
+    .feature-card:hover{
+        transform:translateY(-5px);box-shadow:var(--shadow-lg);border-color:var(--primary);
+    }
+    .feature-card .icon{
+        width:48px;height:48px;border-radius:12px;
+        display:flex;align-items:center;justify-content:center;
+        font-size:1.3rem;margin-bottom:16px;
+        background:linear-gradient(135deg,var(--primary),var(--accent));color:white;
+    }
+    .feature-card h5{font-size:1rem;font-weight:600;color:var(--gray-800);margin-bottom:8px;}
+    .feature-card p{font-size:.85rem;color:var(--gray-600);margin:0;}
+
+    .pill{
+        display:inline-flex;align-items:center;border-radius:999px;
+        padding:2px 8px;font-size:11px;border:1px solid var(--gray-200);
+        color:var(--gray-600);margin-left:6px;background:#f9fafb;
+    }
+
+    .chip-list{display:flex;flex-wrap:wrap;gap:6px;margin-top:4px;}
+    .chip{
+        border-radius:999px;padding:2px 8px;border:1px solid var(--gray-200);
+        font-size:11px;color:var(--gray-600);background:#f9fafb;
+    }
+
+    /* ---------- Footer ---------- */
+    .doc-footer{
+        margin-top:60px;padding:32px;
+        background:linear-gradient(135deg,#1e3a5f 0%,#0f172a 50%,#1e1b4b 100%);
+        border-radius:24px;text-align:center;position:relative;overflow:hidden;
+    }
+    .doc-footer::before{
+        content:'';position:absolute;inset:0;
+        background:
+          radial-gradient(circle at 30% 50%,rgba(59,130,246,.2),transparent 50%),
+          radial-gradient(circle at 70% 50%,rgba(139,92,246,.2),transparent 50%);
+    }
+    .doc-footer-content{position:relative;z-index:1;}
+    .doc-footer .logo{
+        display:inline-flex;align-items:center;gap:12px;margin-bottom:16px;
+    }
+    .doc-footer .logo i{
+        font-size:2rem;
+        background:linear-gradient(135deg,#60a5fa,#a78bfa);
+        -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+        background-clip:text;
+    }
+    .doc-footer .logo span{
+        font-family:'Poppins',sans-serif;font-size:1.4rem;
+        font-weight:700;color:white;
+    }
+    .doc-footer p{
+        color:rgba(255,255,255,.85);font-size:.98rem;margin:0;
+    }
+    .doc-footer strong{
+        background:linear-gradient(135deg,#60a5fa,#a78bfa);
+        -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+        background-clip:text;
+    }
+
+    /* ---------- Responsive ---------- */
+    @media(max-width:768px){
+        .container{margin:20px;border-radius:24px;}
+        .hero-header{padding:40px 24px;}
+        .hero-title{font-size:2.1rem;}
+        .content-area{padding:30px 24px;}
+        .section-content{padding:20px;}
+        .toc-grid{grid-template-columns:1fr;}
+        .floating-nav{top:auto;bottom:90px;right:10px;}
+        .back-to-top{bottom:20px;right:20px;width:48px;height:48px;}
+    }
+
+    /* ---------- Print Styles ---------- */
+    @media print {
+        * {animation:none !important;transition:none !important;}
+        .bg-wrapper,.floating-nav,.back-to-top,.progress-bar{display:none !important;}
+        body{background:white;}
+        .container{margin:0;padding:0;box-shadow:none;border-radius:0;border:none;background:white;}
+        .hero-header{background:var(--gray-100);print-color-adjust:exact;-webkit-print-color-adjust:exact;}
+    }
+    </style>
+</head>
+<body>
+
+<!-- Progress Bar -->
+<div class="progress-bar" id="progressBar"></div>
+
+<!-- Animated Background -->
+<div class="bg-wrapper">
+    <div class="floating-shapes">
+        <div class="shape"></div>
+        <div class="shape"></div>
+        <div class="shape"></div>
+        <div class="shape"></div>
+    </div>
+</div>
+
+<!-- Floating Navigation -->
+<div class="floating-nav">
+    <button class="nav-btn" onclick="toggleDarkMode()" title="Toggle Theme">
+        <i class="fas fa-moon"></i>
+    </button>
+    <button class="nav-btn" onclick="window.print()" title="Print Document">
+        <i class="fas fa-print"></i>
+    </button>
+</div>
+
+<!-- Back to Top Button -->
+<button class="back-to-top" id="backToTop" onclick="scrollToTop()">
+    <i class="fas fa-arrow-up"></i>
+</button>
+
+<!-- Main Container -->
+<div class="container">
+
+    <!-- Hero Header -->
+    <header class="hero-header">
+        <div class="hero-glow hero-glow-1"></div>
+        <div class="hero-glow hero-glow-2"></div>
+        
+        <div class="hero-content">
+            <div class="logo-badge">
+                <i class="fas fa-shield-halved"></i>
+                <span>Big Data & Cybersecurity</span>
+            </div>
+            
+            <h1 class="hero-title">
+                <span class="brand">Cybersecurity Threat Detection</span>
+                <span class="white">& Log Analysis</span>
+            </h1>
+            
+            <div class="hero-subtitle">
+                <span>Apache Spark</span>
+                <div class="divider"></div>
+                <span>Google Colab</span>
+                <div class="divider"></div>
+                <span>Big Data Project</span>
+            </div>
+        </div>
+    </header>
+
+    <!-- Meta Section -->
+    <div class="meta-section">
+        <div class="meta-badge version">
+            <div class="icon"><i class="fas fa-book"></i></div>
+            <div class="text">
+                <div class="label">Subject</div>
+                <div class="value">Big Data </div>
+            </div>
+        </div>
+        
+        <div class="meta-badge date">
+            <div class="icon"><i class="fas fa-chalkboard-teacher"></i></div>
+            <div class="text">
+                <div class="label">Teacher</div>
+                <div class="value">Sir Farooq Alam</div>
+            </div>
+        </div>
+        
+        <div class="meta-badge author">
+            <div class="icon"><i class="fas fa-users"></i></div>
+            <div class="text">
+                <div class="label">Group Members</div>
+                <div class="value">[Khalique Ur Rehman – SP22-BSCS-0021] · [Name 2 – ID] · [Name 3 – ID] · [Name 4 – ID]</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Content Area -->
+    <div class="content-area">
+        
+        <p class="intro-text">
+            This project, <strong>“Cybersecurity Threat Detection and Log Analysis Using Big Data and Apache Spark”</strong>,
+            demonstrates how large‑scale security logs can be processed with Apache Spark on Google Colab to identify
+            suspicious IP addresses, brute‑force login attempts, and abnormal access patterns. All data is synthetically
+            generated for learning purposes, but the analytics pipeline mirrors a real‑world Security Operations Center.
+        </p>
+
+        <!-- Table of Contents -->
+        <section class="toc-section">
+            <div class="section-header">
+                <div class="section-icon">
+                    <i class="fas fa-list"></i>
+                </div>
+                <h2>Table of Contents</h2>
+            </div>
+            
+            <div class="toc-wrapper">
+                <div class="toc-grid">
+                    <div class="toc-column">
+                        <a href="#intro" class="toc-item">
+                            <span class="number">1</span>
+                            <span class="title">Introduction</span>
+                            <i class="fas fa-chevron-right icon"></i>
+                        </a>
+                        <div class="toc-subitems">
+                            <a href="#intro-background" class="toc-subitem">Background</a>
+                            <a href="#intro-problem" class="toc-subitem">Problem Statement</a>
+                            <a href="#intro-objectives" class="toc-subitem">Objectives</a>
+                        </div>
+
+                        <a href="#bigdata" class="toc-item">
+                            <span class="number">2</span>
+                            <span class="title">Big Data Tools & Environment</span>
+                            <i class="fas fa-chevron-right icon"></i>
+                        </a>
+                        <div class="toc-subitems">
+                            <a href="#bigdata-stack" class="toc-subitem">Technology Stack</a>
+                            <a href="#bigdata-colab" class="toc-subitem">Spark on Google Colab</a>
+                        </div>
+                    </div>
+                    
+                    <div class="toc-column">
+                        <a href="#dataset" class="toc-item">
+                            <span class="number">3</span>
+                            <span class="title">Log Dataset Design</span>
+                            <i class="fas fa-chevron-right icon"></i>
+                        </a>
+                        <div class="toc-subitems">
+                            <a href="#dataset-schema" class="toc-subitem">Schema & Fields</a>
+                            <a href="#dataset-volume" class="toc-subitem">Volume & Storage</a>
+                        </div>
+                        
+                        <a href="#implementation" class="toc-item">
+                            <span class="number">4</span>
+                            <span class="title">Implementation Pipeline</span>
+                            <i class="fas fa-chevron-right icon"></i>
+                        </a>
+                        <div class="toc-subitems">
+                            <a href="#implementation-steps" class="toc-subitem">Step‑by‑Step Flow</a>
+                            <a href="#implementation-link" class="toc-subitem">Colab Notebook Link</a>
+                        </div>
+                    </div>
+                    
+                    <div class="toc-column">
+                        <a href="#analytics" class="toc-item">
+                            <span class="number">5</span>
+                            <span class="title">Threat Detection Analytics</span>
+                            <i class="fas fa-chevron-right icon"></i>
+                        </a>
+                        <div class="toc-subitems">
+                            <a href="#analytics-rules" class="toc-subitem">Detection Rules</a>
+                            <a href="#analytics-metrics" class="toc-subitem">Key Metrics</a>
+                        </div>
+
+                        <a href="#results" class="toc-item">
+                            <span class="number">6</span>
+                            <span class="title">Results & Learning</span>
+                            <i class="fas fa-chevron-right icon"></i>
+                        </a>
+                        <div class="toc-subitems">
+                            <a href="#results-outcomes" class="toc-subitem">Outcomes</a>
+                            <a href="#results-learning" class="toc-subitem">Learning Experience</a>
+                        </div>
+
+                        <a href="#conclusion" class="toc-item">
+                            <span class="number">7</span>
+                            <span class="title">Conclusion & Future Work</span>
+                            <i class="fas fa-chevron-right icon"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 1. Introduction -->
+        <section class="doc-section" id="intro">
+            <div class="section-header">
+                <div class="section-icon intro">
+                    <i class="fas fa-shield-halved"></i>
+                </div>
+                <h2>1. Introduction</h2>
+            </div>
+            
+            <div class="section-content">
+                <h3 id="intro-background">
+                    <span class="badge">1.1</span>
+                    Background
+                </h3>
+                <p>
+                    With the rapid growth of digital systems and online services, organisations generate massive volumes
+                    of security logs from servers, firewalls, applications and network devices. Manually inspecting
+                    these logs is inefficient and easy to get wrong. Meanwhile, cyber‑attacks such as unauthorised
+                    access, brute‑force login attempts and credential stuffing continue to increase.
+                </p>
+
+                <h3 id="intro-problem">
+                    <span class="badge">1.2</span>
+                    Problem Statement
+                </h3>
+                <p>
+                    Traditional log‑analysis tools struggle when log volumes reach gigabytes or terabytes per day.
+                    Security teams need a scalable way to:
+                </p>
+                <ul>
+                    <li>Filter and aggregate millions of log entries efficiently.</li>
+                    <li>Detect abnormal or suspicious behaviour in near real time.</li>
+                    <li>Generate clear reports summarising potential threats.</li>
+                </ul>
+
+                <h3 id="intro-objectives">
+                    <span class="badge">1.3</span>
+                    Objectives
+                </h3>
+                <p>The main objectives of this project are:</p>
+                <ul>
+                    <li>To apply Big Data concepts using Apache Spark for cybersecurity analytics.</li>
+                    <li>To analyse large‑scale log data and detect suspicious activities automatically.</li>
+                    <li>To implement a scalable data‑processing pipeline on Google Colab.</li>
+                    <li>To demonstrate how Big Data tools can strengthen practical cybersecurity monitoring.</li>
+                </ul>
+
+                <div class="callout info">
+                    <div class="callout-icon">
+                        <i class="fas fa-lightbulb"></i>
+                    </div>
+                    <div class="callout-content">
+                        <div class="callout-title">Key Idea</div>
+                        <p class="callout-text">
+                            Instead of manually reading log files, we let <strong>Apache Spark</strong> do the heavy work:
+                            loading, filtering, grouping and highlighting security anomalies at scale.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 2. Big Data Tools & Environment -->
+        <section class="doc-section" id="bigdata">
+            <div class="section-header">
+                <div class="section-icon arch">
+                    <i class="fas fa-server"></i>
+                </div>
+                <h2>2. Big Data Tools &amp; Environment</h2>
+            </div>
+            
+            <div class="section-content">
+                <h3 id="bigdata-stack">
+                    <span class="badge">2.1</span>
+                    Technology Stack
+                </h3>
+                <ul>
+                    <li><strong>Apache Spark (PySpark):</strong> distributed processing engine for loading and analysing log data.</li>
+                    <li><strong>Google Colab:</strong> cloud‑hosted Jupyter environment used to run Spark code without local setup.</li>
+                    <li><strong>Local / Cloud Storage (CSV files):</strong> stores raw synthetic logs and exported suspicious‑IP reports.</li>
+                    <li><strong>Python Ecosystem:</strong> NumPy and pandas for data generation and simple plotting.</li>
+                </ul>
+
+                <h3 id="bigdata-colab">
+                    <span class="badge">2.2</span>
+                    Spark on Google Colab
+                </h3>
+                <p>
+                    Google Colab provides free compute resources and an interactive notebook interface, which is ideal
+                    for experimenting with Big Data frameworks. In this project, Spark is installed and configured inside
+                    Colab, allowing us to:
+                </p>
+                <ul>
+                    <li>Create a <code>SparkSession</code> directly in the notebook.</li>
+                    <li>Read and write CSV files stored in Colab’s virtual file system.</li>
+                    <li>Visualise results with Python plotting libraries.</li>
+                </ul>
+            </div>
+        </section>
+
+        <!-- 3. Dataset Design -->
+        <section class="doc-section" id="dataset">
+            <div class="section-header">
+                <div class="section-icon website">
+                    <i class="fas fa-database"></i>
+                </div>
+                <h2>3. Log Dataset Design</h2>
+            </div>
+            
+            <div class="section-content">
+                <h3 id="dataset-schema">
+                    <span class="badge">3.1</span>
+                    Schema &amp; Fields
+                </h3>
+                <p>
+                    To avoid privacy issues, the project uses <strong>synthetic security logs</strong> generated inside
+                    the notebook. Each log entry simulates an authentication or access event and contains:
+                </p>
+                <ul>
+                    <li><strong>timestamp</strong> – date and time of the request.</li>
+                    <li><strong>ip_address</strong> – source IPv4 address (normal or intentionally suspicious).</li>
+                    <li><strong>username</strong> – user or service account attempting access.</li>
+                    <li><strong>endpoint</strong> – resource being accessed (e.g. <code>/login</code>, <code>/admin</code>).</li>
+                    <li><strong>status</strong> – <code>SUCCESS</code> or <code>FAIL</code>.</li>
+                    <li><strong>country</strong> – rough geographic origin for additional context.</li>
+                </ul>
+
+                <h3 id="dataset-volume">
+                    <span class="badge">3.2</span>
+                    Volume &amp; Storage
+                </h3>
+                <p>
+                    The notebook generates around <strong>8,000</strong> log entries spread across multiple days.
+                    Although relatively small compared to enterprise systems, the structure allows the same Spark
+                    pipeline to be applied to millions of rows with only configuration changes.
+                </p>
+                <p>
+                    Generated logs are first built in a pandas DataFrame and then saved as
+                    <code>cyber_logs.csv</code>, which Spark reads into a distributed <code>DataFrame</code> for
+                    further analysis.
+                </p>
+            </div>
+        </section>
+
+        <!-- 4. Implementation Pipeline -->
+        <section class="doc-section" id="implementation">
+            <div class="section-header">
+                <div class="section-icon workflow">
+                    <i class="fas fa-diagram-project"></i>
+                </div>
+                <h2>4. Implementation Pipeline</h2>
+            </div>
+            
+            <div class="section-content">
+                <h3 id="implementation-steps">
+                    <span class="badge">4.1</span>
+                    Step‑by‑Step Flow
+                </h3>
+                <div class="workflow-steps">
+                    <div class="workflow-step" data-step="1">
+                        <p>Install PySpark and create a <strong>SparkSession</strong> inside Google Colab.</p>
+                    </div>
+                    <div class="workflow-step" data-step="2">
+                        <p>Generate synthetic security logs with mixed normal and suspicious activity.</p>
+                    </div>
+                    <div class="workflow-step" data-step="3">
+                        <p>Save the logs as CSV and load them into a Spark DataFrame.</p>
+                    </div>
+                    <div class="workflow-step" data-step="4">
+                        <p>Clean and enrich the data (e.g., convert timestamps, extract hour of day).</p>
+                    </div>
+                    <div class="workflow-step" data-step="5">
+                        <p>Apply filters, group‑by and aggregations to compute security metrics.</p>
+                    </div>
+                    <div class="workflow-step" data-step="6">
+                        <p>Apply rule‑based threat detection to flag suspicious IP addresses and time periods.</p>
+                    </div>
+                    <div class="workflow-step" data-step="7">
+                        <p>Export the list of suspicious IPs to CSV for reporting or further visualisation.</p>
+                    </div>
+                </div>
+
+                <h3 id="implementation-link">
+                    <span class="badge">4.2</span>
+                    Google Colab Notebook
+                </h3>
+                <p>
+                    The full implementation, including all Spark code and outputs, is available in the Colab notebook.
+                    Update the link below with your own shared notebook URL.
+                </p>
+                <p>
+                    <a href="https://colab.research.google.com/drive/19LwgLWnP9cKEZNaXtz5xFrYKSka4s7Yf#scrollTo=uJJtOGkLlkK6"
+                       target="_blank"
+                       style="display:inline-block;margin-top:6px;padding:8px 16px;border-radius:999px;background:#2563eb;color:white;text-decoration:none;font-size:0.9rem;font-weight:600;box-shadow:var(--shadow-lg);">
+                        <i class="fas fa-external-link-alt" style="margin-right:6px;"></i>
+                        Open Cybersecurity Spark Notebook
+                    </a>
+                </p>
+            </div>
+        </section>
+
+        <!-- 5. Threat Detection Analytics -->
+        <section class="doc-section" id="analytics">
+            <div class="section-header">
+                <div class="section-icon nonfunc">
+                    <i class="fas fa-magnifying-glass-chart"></i>
+                </div>
+                <h2>5. Threat Detection Analytics</h2>
+            </div>
+            
+            <div class="section-content">
+                <h3 id="analytics-rules">
+                    <span class="badge">5.1</span>
+                    Detection Rules Implemented
+                </h3>
+                <p>
+                    Three primary rule‑based analytics methods are implemented using Spark transformations:
+                </p>
+                <ul>
+                    <li>
+                        <span class="label">Rule 1 – Brute‑Force Login Detection:</span>
+                        IP addresses with more than a chosen threshold (e.g. <strong>25 failed</strong> logins)
+                        are flagged as potential brute‑force attackers.
+                    </li>
+                    <li>
+                        <span class="label">Rule 2 – Credential Stuffing / User Enumeration:</span>
+                        For each IP, the number of <em>distinct usernames</em> with failed logins is counted.
+                        IPs failing against many different usernames are considered suspicious.
+                    </li>
+                    <li>
+                        <span class="label">Rule 3 – Abnormal Hourly Activity:</span>
+                        Total log events per hour are calculated and compared to the average.
+                        Hours with counts above <em>mean + 2 × standard deviation</em> are highlighted as unusual.
+                    </li>
+                </ul>
+
+                <div class="callout success">
+                    <div class="callout-icon">
+                        <i class="fas fa-shield"></i>
+                    </div>
+                    <div class="callout-content">
+                        <div class="callout-title">Spark for Security</div>
+                        <p class="callout-text">
+                            Because these rules are implemented with <code>groupBy</code>, <code>agg</code> and
+                            <code>filter</code> over a Spark DataFrame, they naturally scale to millions of log entries
+                            spread across a cluster.
+                        </p>
+                    </div>
+                </div>
+
+                <h3 id="analytics-metrics">
+                    <span class="badge">5.2</span>
+                    Key Metrics & Outputs
+                </h3>
+                <ul>
+                    <li>Top IPs by number of failed login attempts.</li>
+                    <li>IPs associated with many different failed usernames.</li>
+                    <li>Distribution of log volume per hour and detection of “noisy” hours.</li>
+                    <li>Combined suspicious‑IP table with reasons and counts, saved as CSV.</li>
+                </ul>
+                <p>
+                    These metrics can be easily exported from Spark to tools such as Excel, Power BI or a SIEM dashboard
+                    for further inspection by security analysts.
+                </p>
+            </div>
+        </section>
+
+        <!-- 6. Results & Learning -->
+        <section class="doc-section" id="results">
+            <div class="section-header">
+                <div class="section-icon checkout">
+                    <i class="fas fa-clipboard-check"></i>
+                </div>
+                <h2>6. Results &amp; Learning</h2>
+            </div>
+            
+            <div class="section-content">
+                <h3 id="results-outcomes">
+                    <span class="badge">6.1</span>
+                    Outcomes
+                </h3>
+                <ul>
+                    <li>Successfully designed a cybersecurity threat detection pipeline using Apache Spark.</li>
+                    <li>Detected suspicious IPs and abnormal activity patterns from large synthetic log datasets.</li>
+                    <li>Demonstrated that the same approach can be scaled to real‑world Big Data volumes.</li>
+                </ul>
+
+                <h3 id="results-learning">
+                    <span class="badge">6.2</span>
+                    Learning Experience
+                </h3>
+                <p>
+                    The project provided hands‑on experience with both Big Data and cybersecurity concepts:
+                </p>
+                <ul>
+                    <li>Practical understanding of Spark DataFrames, transformations and actions.</li>
+                    <li>Awareness of typical log formats and security indicators used in SOC environments.</li>
+                    <li>Experience in combining batch analytics with security rules to obtain meaningful alerts.</li>
+                </ul>
+            </div>
+        </section>
+
+        <!-- 7. Conclusion & Future Work -->
+        <section class="doc-section" id="conclusion">
+            <div class="section-header">
+                <div class="section-icon screenshots">
+                    <i class="fas fa-flag-checkered"></i>
+                </div>
+                <h2>7. Conclusion &amp; Future Work</h2>
+            </div>
+            
+            <div class="section-content">
+                <h3>
+                    <span class="badge">7.1</span>
+                    Conclusion
+                </h3>
+                <p>
+                    This Big Data project shows how Apache Spark can be used as a powerful engine for cybersecurity
+                    analytics. By generating and processing large‑scale synthetic logs, we were able to detect brute‑force
+                    attempts, credential‑stuffing behaviour and abnormal traffic hours using simple, explainable rules.
+                </p>
+                <p>
+                    Even though the logs in this project are simulated, the same pipeline can be applied to real
+                    enterprise data sources such as web server logs, VPN logs or SIEM exports, making it a valuable
+                    starting point for building more advanced threat‑detection systems.
+                </p>
+
+                <h3>
+                    <span class="badge">7.2</span>
+                    Future Improvements
+                </h3>
+                <ul>
+                    <li>Integrate real‑time log ingestion using <strong>Spark Streaming</strong> or <strong>Apache Kafka</strong>.</li>
+                    <li>Deploy the Spark job to cloud platforms like AWS EMR or Azure Databricks.</li>
+                    <li>Incorporate machine‑learning models (e.g. anomaly detection, classification) for smarter alerts.</li>
+                    <li>Connect the output to a dashboard or SIEM tool for continuous monitoring.</li>
+                </ul>
+                <p>
+                    Overall, the work reinforces a key lesson of Big Data and cybersecurity: large log volumes are only
+                    useful when combined with scalable analytics and clear, actionable insights.
+                </p>
+            </div>
+        </section>
+
+        <!-- Footer -->
+        <footer class="doc-footer">
+            <div class="doc-footer-content">
+                <div class="logo">
+                    <i class="fas fa-shield-halved"></i>
+                    <span>Cybersecurity Threat Detection</span>
+                </div>
+                <p>
+                    Big Data project implemented with <strong>Apache Spark</strong> on
+                    <strong>Google Colab</strong> for the course <strong>Big Data</strong>.
+                </p>
+            </div>
+        </footer>
+
+    </div>
+</div>
+
+<script>
+    // Progress Bar & Back to Top
+    window.addEventListener('scroll', () => {
+        const scrollTop = window.scrollY;
+        const docHeight = document.documentElement.scrollHeight - window.innerHeight;
+        const progress = (scrollTop / docHeight) * 100;
+        document.getElementById('progressBar').style.width = progress + '%';
+        
+        const backToTop = document.getElementById('backToTop');
+        if (scrollTop > 500) {
+            backToTop.classList.add('visible');
+        } else {
+            backToTop.classList.remove('visible');
+        }
+    });
+
+    function scrollToTop() {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    // Section reveal on scroll
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                entry.target.style.opacity = '1';
+                entry.target.style.transform = 'translateY(0)';
+            }
+        });
+    }, { threshold: 0.1 });
+
+    document.querySelectorAll('.doc-section').forEach(section => {
+        section.style.opacity = '0';
+        section.style.transform = 'translateY(30px)';
+        section.style.transition = 'all 0.6s ease-out';
+        observer.observe(section);
+    });
+
+    // Simple dark-mode toggle (optional)
+    function toggleDarkMode() {
+        document.body.classList.toggle('dark-mode');
+    }
+</script>
+
+</body>
+</html>
